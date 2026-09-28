@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Пельменная — кликер</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cobalt:#1F3FA8; --ink:#0E1A4A; --porcelain:#FFFFFF; --mist:#E6ECFA;
+  --butter:#F2C14E; --muted:#5A6690; --line:#C9D4F2;
+  --bg:var(--porcelain); --fg:var(--ink); --panel:var(--mist);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1438; --fg:#EEF2FF; --panel:#16225A; --muted:#9FB0E8; --line:#2A3A80; --cobalt:#6F8CFF;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1438; --fg:#EEF2FF; --panel:#16225A; --muted:#9FB0E8; --line:#2A3A80; --cobalt:#6F8CFF;
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;height:100%}
+body{
+  background:var(--bg); color:var(--fg);
+  font-family:Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;
+  background-image:radial-gradient(circle at 1px 1px,var(--line) 1.2px,transparent 0);
+  background-size:22px 22px;
+}
+.wrap{max-width:980px;margin:0 auto;padding:20px 16px 40px;display:grid;gap:24px;grid-template-columns:1fr}
+@media (min-width:820px){.wrap{grid-template-columns:1.1fr 1fr;align-items:start;padding-top:40px}}
+h1{font-family:Unbounded,"Arial Black",sans-serif;font-weight:800;font-size:clamp(2rem,6vw,3.2rem);
+  line-height:1;margin:0;color:var(--cobalt);letter-spacing:-.02em}
+.stage{text-align:center;position:relative}
+.count{font-family:Unbounded,"Arial Black",sans-serif;font-weight:500;font-size:clamp(2.4rem,9vw,4rem);margin:18px 0 0;font-variant-numeric:tabular-nums}
+.sub{color:var(--muted);margin:4px 0 0}
+.dump{
+  margin:24px auto 0;display:block;background:none;border:0;cursor:pointer;padding:0;
+  width:min(300px,75vw);aspect-ratio:1;border-radius:50%;
+  transition:transform .08s ease;-webkit-tap-highlight-color:transparent;
+}
+.dump:active{transform:scale(.93)}
+.dump:focus-visible{outline:4px solid var(--butter);outline-offset:6px}
+.dump svg{width:100%;height:100%;display:block}
+.pop{position:absolute;pointer-events:none;font-family:Unbounded,sans-serif;font-weight:800;color:var(--cobalt);
+  font-size:1.4rem;animation:rise .9s ease-out forwards}
+@keyframes rise{to{transform:translateY(-80px);opacity:0}}
+.shop{background:var(--panel);border:2px solid var(--cobalt);border-radius:22px;padding:18px}
+.shop h2{font-family:Unbounded,sans-serif;font-weight:500;font-size:1.25rem;margin:0 0 12px}
+.item{width:100%;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;text-align:left;
+  background:var(--bg);color:var(--fg);border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;
+  margin-bottom:10px;font:inherit;cursor:pointer}
+.item:focus-visible{outline:3px solid var(--butter);outline-offset:2px}
+.item:disabled{opacity:.45;cursor:not-allowed}
+.item:not(:disabled):hover{border-color:var(--cobalt)}
+.ico{font-size:1.8rem;text-align:center}
+.name{font-weight:700}
+.desc{font-size:.85rem;color:var(--muted)}
+.price{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.own{font-family:Unbounded,sans-serif;font-size:.8rem;color:var(--cobalt)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{font:inherit;font-weight:700;border-radius:999px;padding:10px 16px;cursor:pointer;border:2px solid var(--cobalt);
+  background:var(--cobalt);color:#fff;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--cobalt)}
+.btn:focus-visible{outline:3px solid var(--butter);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.pop{animation:none;display:none}.dump{transition:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="stage" id="stage">
+    <h1>Пельменная</h1>
+    <p class="count" id="count">0</p>
+    <p class="sub" id="rate">Нажми на пельмень, чтобы слепить первый</p>
+    <button class="dump" id="dump" aria-label="Слепить пельмень">
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <circle cx="100" cy="100" r="96" fill="var(--panel)" stroke="var(--cobalt)" stroke-width="4"/>
+        <path d="M40 118 Q100 30 160 118 Q100 150 40 118Z" fill="#FFF8EC" stroke="#1F3FA8" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M52 108 q8-10 16-2 q8-12 16-4 q8-12 16-4 q8-12 16-4 q8-10 16 2 q8-8 16 4" fill="none" stroke="#1F3FA8" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="84" cy="120" r="4" fill="#1F3FA8"/><circle cx="116" cy="120" r="4" fill="#1F3FA8"/>
+        <path d="M92 130 q8 7 16 0" fill="none" stroke="#1F3FA8" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="72" cy="128" r="6" fill="#F2C14E" opacity=".7"/><circle cx="128" cy="128" r="6" fill="#F2C14E" opacity=".7"/>
+      </svg>
+    </button>
+  </section>
+
+  <section class="shop" aria-labelledby="shopTitle">
+    <h2 id="shopTitle">Улучшения</h2>
+    <div id="items"></div>
+    <div class="row">
+      <a class="btn" id="share" target="_blank" rel="noopener">Поделиться в Telegram</a>
+      <button class="btn ghost" id="reset">Начать заново</button>
+    </div>
+  </section>
+</main>
+
+<script>
+const UPGRADES = [
+  {id:'rolling', ico:'🪵', name:'Скалка', desc:'+1 пельмень за клик', base:15, click:1},
+  {id:'granny',  ico:'👵', name:'Бабушка', desc:'Лепит 1 пельмень в секунду', base:50, auto:1},
+  {id:'machine', ico:'⚙️', name:'Пельменница', desc:'8 в секунду', base:500, auto:8},
+  {id:'shop',    ico:'🏠', name:'Цех', desc:'50 в секунду', base:6000, auto:50},
+  {id:'factory', ico:'🏭', name:'Фабрика', desc:'300 в секунду', base:70000, auto:300},
+  {id:'rocket',  ico:'🚀', name:'Пельмени в космос', desc:'2000 в секунду', base:900000, auto:2000},
+];
+const KEY = 'pelmennaya-save-v1';
+let state = {count:0, total:0, owned:{}};
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s.count==='number') state = s; } catch(e){}
+
+const $ = id => document.getElementById(id);
+const fmt = n => {
+  n = Math.floor(n);
+  if (n < 1e4) return n.toLocaleString('ru-RU');
+  const u = [[1e12,' трлн'],[1e9,' млрд'],[1e6,' млн'],[1e3,' тыс']];
+  for (const [v,s] of u) if (n >= v) return (n/v).toFixed(n/v < 100 ? 1 : 0).replace('.',',') + s;
+};
+const owned = id => state.owned[id] || 0;
+const price = u => Math.ceil(u.base * Math.pow(1.15, owned(u.id)));
+const perClick = () => 1 + UPGRADES.reduce((a,u)=>a+(u.click||0)*owned(u.id),0);
+const perSec = () => UPGRADES.reduce((a,u)=>a+(u.auto||0)*owned(u.id),0);
+
+function renderShop(){
+  const box = $('items'); box.innerHTML = '';
+  UPGRADES.forEach(u=>{
+    const b = document.createElement('button');
+    b.className = 'item'; b.dataset.id = u.id;
+    b.innerHTML = `<span class="ico" aria-hidden="true">${u.ico}</span>
+      <span><span class="name">${u.name}</span> <span class="own">×${owned(u.id)}</span><br><span class="desc">${u.desc}</span></span>
+      <span class="price">${fmt(price(u))} 🥟</span>`;
+    b.onclick = () => buy(u);
+    box.appendChild(b);
+  });
+  update();
+}
+function update(){
+  $('count').textContent = fmt(state.count) + ' 🥟';
+  const ps = perSec();
+  $('rate').textContent = state.total === 0 ? 'Нажми на пельмень, чтобы слепить первый'
+    : `${fmt(perClick())} за клик · ${fmt(ps)} в секунду`;
+  document.querySelectorAll('.item').forEach(b=>{
+    const u = UPGRADES.find(x=>x.id===b.dataset.id);
+    b.disabled = state.count < price(u);
+  });
+  const text = `Я слепил ${fmt(state.total)} пельменей в «Пельменной»! А ты сколько?`;
+  $('share').href = 'https://t.me/share/url?url=' + encodeURIComponent(location.href) + '&text=' + encodeURIComponent(text);
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function add(n){ state.count += n; state.total += n; }
+function buy(u){
+  const p = price(u); if (state.count < p) return;
+  state.count -= p; state.owned[u.id] = owned(u.id)+1; save(); renderShop();
+}
+$('dump').addEventListener('click', e=>{
+  const n = perClick(); add(n); update();
+  const r = $('stage').getBoundingClientRect();
+  const x = (e.clientX || r.left + r.width/2) - r.left, y = (e.clientY || r.top + r.height*0.7) - r.top;
+  const s = document.createElement('span'); s.className='pop'; s.textContent = '+' + fmt(n);
+  s.style.left = (x-15)+'px'; s.style.top = (y-30)+'px';
+  $('stage').appendChild(s); setTimeout(()=>s.remove(), 900);
+});
+$('reset').onclick = ()=>{
+  if (!confirm('Стереть весь прогресс и начать заново?')) return;
+  state = {count:0,total:0,owned:{}}; save(); renderShop();
+};
+let last = performance.now();
+setInterval(()=>{
+  const now = performance.now(); add(perSec()*(now-last)/1000); last = now; update();
+}, 200);
+setInterval(save, 3000);
+renderShop();
+</script>
+</body>
+</html>
