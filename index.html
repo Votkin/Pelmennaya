@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Пельменная — кликер</title>
+<title>Пельменная</title><script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
@@ -147,7 +147,7 @@ function update(){
     b.disabled = state.count < price(u);
   });
   const text = `Я слепил ${fmt(state.total)} пельменей в «Пельменной»! А ты сколько?`;
-  $('share').href = 'https://t.me/share/url?url=' + encodeURIComponent(location.href) + '&text=' + encodeURIComponent(text);
+  $('share').href = 'https://t.me/share/url?url=' + encodeURIComponent('https://t.me/pelmennaya_clicker_bot/play') + '&text=' + encodeURIComponent(text);
 }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
 function add(n){ state.count += n; state.total += n; }
@@ -172,6 +172,15 @@ setInterval(()=>{
   const now = performance.now(); add(perSec()*(now-last)/1000); last = now; update();
 }, 200);
 setInterval(save, 3000);
+  const tg = window.Telegram && Telegram.WebApp;
+if (tg && tg.initData) {
+  tg.ready();
+  tg.expand();
+  $('share').addEventListener('click', e => {
+    e.preventDefault();
+    tg.openTelegramLink($('share').href);
+  });
+}
 renderShop();
 </script>
 </body>
